@@ -35,6 +35,7 @@ def changeBgColor():
 	colors = askcolor(title="Choose Color")
 	bgColor = colors[1]
 	print(f"Background Color set to {bgColor}")
+	bgFrame.config(bg=bgColor)
 
 
 def changeOutlineColor():
@@ -42,6 +43,7 @@ def changeOutlineColor():
 	colors = askcolor(title="Choose Color")
 	outlineColor = colors[1]
 	print(f"Outline Color set to {outlineColor}")
+	outlineFrame.config(bg=outlineColor)
 
 
 # Function to clear the whole canvas
@@ -129,8 +131,8 @@ def circleChange():
 
 
 # If User Select the Brush tool
-def dotChange():
-	print("Dot Selected")
+def brushChange():
+	print("Brush Selected")
 	canvas.config(cursor="dot")
 	currentTool.set("Brush")
 	statusBar.update()
@@ -181,7 +183,7 @@ def moveTest(event):
 		y1=event.y
 		x2=event.x
 		y2=event.y
-		canvas.create_line(x1, y1, x2, y2, fill="black", width=5.5, capstyle=ROUND, smooth=TRUE, splinesteps=36)
+		canvas.create_line(x1, y1, x2, y2, fill=outlineColor, width=5.5, capstyle=ROUND, smooth=TRUE, splinesteps=36)
 	
 
 root.title("Drawing Board")
@@ -189,43 +191,58 @@ root.geometry("600x300")
 
 # Tools Menu
 editingFrame = Frame(root, bd=2, relief="groove", padx=10, pady=10)
-editingFrame.pack()
+editingFrame.pack(side=TOP)
+
+editingLabel = Label(editingFrame, text="Tools")
+editingLabel.pack(side=TOP)
 
 moveButton = Button(editingFrame, text="Move", command=moveChange)
-moveButton.pack()
+moveButton.pack(side=LEFT)
 
-dotButton = Button(editingFrame, text="Dot", command=dotChange)
-dotButton.pack()
+dotButton = Button(editingFrame, text="Brush", command=brushChange)
+dotButton.pack(side=LEFT)
 
 circleButton = Button(editingFrame, text="Circle", command=circleChange)
-circleButton.pack()
+circleButton.pack(side=LEFT)
 
 lineButton = Button(editingFrame, text="Line", command=lineChange)
-lineButton.pack()
+lineButton.pack(side=LEFT)
 
 rectangleButton = Button(editingFrame, text="Rectangle", command=rectangleChange)
-rectangleButton.pack()
+rectangleButton.pack(side=LEFT)
 
 
 textButton = Button(editingFrame, text="Text", command=textChange)
-textButton.pack()
-
-editingLabel = Label(editingFrame, text="Tools")
-editingLabel.pack(side="bottom")
+textButton.pack(side=LEFT)
 
 
+# Colors Menu
+colorsFrame = Frame(root, bd=2, relief="groove", padx=10, pady=10)
 
+colorsLabel = Label(colorsFrame, text="Colors")
+colorsLabel.pack(side=TOP)
+
+backgroundMainFrame = Frame(colorsFrame, padx=10, pady=10)
+bgFrame = Frame(backgroundMainFrame, width=100, height=100, bg=bgColor)
+bgFrame.pack()
+bgButton = Button(backgroundMainFrame, text="Background Color", command=changeBgColor)
+bgButton.pack()
+backgroundMainFrame.pack(side=LEFT)
+
+
+outlineMainFrame = Frame(colorsFrame, padx=10, pady=10)
+outlineFrame = Frame(outlineMainFrame, width=100, height=100, bg=outlineColor)
+outlineFrame.pack()
+outlineButton = Button(outlineMainFrame, text="Outline Color", command=changeOutlineColor)
+outlineButton.pack()
+colorsFrame.pack()
+outlineMainFrame.pack(side=LEFT)
 # Actions Menu
 actionFrame = Frame(root, bd=2, relief="groove", padx=10, pady=10)
 
 deleteButton = Button(actionFrame, text="Clear All", command=clearCanvas)
 deleteButton.pack()
 
-bgButton = Button(actionFrame, text="Background Color", command=changeBgColor)
-bgButton.pack()
-
-outlineButton = Button(actionFrame, text="Outline Color", command=changeOutlineColor)
-outlineButton.pack()
 
 actionLabel = Label(actionFrame, text="Actions")
 actionLabel.pack(side="bottom")
