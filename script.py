@@ -2,7 +2,8 @@
 from tkinter import *
 from tkinter.messagebox import showinfo, askyesno
 from tkinter.colorchooser import askcolor
-
+from tkinter.filedialog import asksaveasfilename
+from PIL import ImageGrab
 
 root = Tk()
 
@@ -13,23 +14,19 @@ previousY = 0
 currentX = 0
 currentY = 0
 
-# Varibale for storing the id of shapes
-shape_id = 0
-
+# Varibale for storing the id of latest drawing shape
+shape_id = None
 
 # Defining the background and outline colors
 bgColor = "white"
 outlineColor = "black"
 
-# Storing Current Tool Selection (Default =)
-
+# Storing Current Tool Selection (Default = BRUSH)
 currentTool = StringVar()
 currentTool.set("Brush")
 
 
-# Function to change color
-
-
+# Function to change bg color
 def changeBgColor():
 	global bgColor
 	colors = askcolor(title="Choose Color")
@@ -37,7 +34,17 @@ def changeBgColor():
 	print(f"Background Color set to {bgColor}")
 	bgFrame.config(bg=bgColor)
 
+# Function when user want to quit the software
+def quit():
+	global shape_id
+	if shape_id is not None:
+		option = askyesno("Quit", "You have unsaved work are you sure you want to quit ?")
+		if option:
+			root.destroy()
+	else:
+		root.destroy()
 
+# Function to change outline color
 def changeOutlineColor():
 	global outlineColor
 	colors = askcolor(title="Choose Color")
@@ -45,6 +52,40 @@ def changeOutlineColor():
 	print(f"Outline Color set to {outlineColor}")
 	outlineFrame.config(bg=outlineColor)
 
+
+# Function to create new Window
+def newWindow():
+	global shape_id
+	if shape_id is not None:
+		option = askyesno("New Window", "You have unsaved work. Do You want to save it before creating a new canvas")
+		if option:
+			saveImage(canvas)
+			canvas.delete("all")
+		else:
+			canvas.delete("all")
+	else:
+		canvas.delete("all")
+
+	
+
+# Function to show about info
+def about():
+	aboutInfo = f"Software is created by Psycho Coder"
+	showinfo("About", aboutInfo)
+
+# Function to save the image of the canvas
+def saveImage(widget):
+	global imageNumber
+	x=root.winfo_rootx()+widget.winfo_x()
+	y=root.winfo_rooty()+widget.winfo_y()
+	x1=x+widget.winfo_width()
+	y1=y+widget.winfo_height()
+	fileType = [("PNG File", "*.png"),
+	]
+	fileName = asksaveasfilename(filetypes=fileType)
+	print(f"File Name: {fileName}.png")
+	ImageGrab.grab().crop((x,y,x1,y1)).save(f"{fileName}.png")
+	showinfo("Done!", "You Photo has been saved successfully!")
 
 # Function to clear the whole canvas
 def clearCanvas():
@@ -58,15 +99,11 @@ def clearCanvas():
 
 # When user click the left click from mouse it will store the position x, y where user clicked
 def leftClick(event):
-	# global shape_id
-	# if currentTool.get() == "Move":
-	# 	canvas.coords(shape_id, event.x, event.y, event.x+10, event.y+10)
 	global previousX
 	global previousY
 	print(f"Left Click: X={event.x}, Y={event.y}")
 	previousX = event.x
 	previousY = event.y
-	# print(f"Shape Id: {shape_id}")
 
 
 
@@ -81,7 +118,6 @@ def leftRelease(event):
 	print(f"Next Points X={currentX}, Y={currentY}")
 
 	# Checking the current tool and drawing the specific shapes
-
 	# If user selected Circle Tool
 	if currentTool.get() == "Circle":
 		shape_id = canvas.create_oval(previousX, previousY, currentX, currentY, fill=bgColor)
@@ -146,6 +182,7 @@ def moveChange():
 	statusBar.update()
 
 # Functions for Move Tools
+# This will be useful when user wanted to move a shape using keyboard up, down, left, right buttons
 def left(e):
    x = -20
    y = 0
@@ -166,7 +203,9 @@ def down(e):
    y = 20
    canvas.move(img, x, y)
 
-
+# This function is used for drag event while click holding mouse button
+# For Brushing Tool
+# For Move Tool
 def moveTest(event):
 	if currentTool.get() == "Move":
 		global shape_id
@@ -178,7 +217,6 @@ def moveTest(event):
 			if currentTool.get() == "Move":
 				canvas.coords(shape_id, event.x, event.y, event.x+width, event.y+height)
 	elif currentTool.get() == "Brush":
-		print("BRUSH!")
 		x1=event.x
 		y1=event.y
 		x2=event.x
@@ -189,6 +227,23 @@ def moveTest(event):
 root.title("Drawing Board")
 root.geometry("600x300")
 
+# Main Menu Bar
+mainMenu = Menu(root)
+
+# File Menu
+fileMenu = Menu(mainMenu, tearoff=False)
+fileMenu.add_command(label="New", command=newWindow)
+fileMenu.add_separator()
+fileMenu.add_command(label="Quit", command=quit)
+mainMenu.add_cascade(label="File", menu=fileMenu)
+
+# Help Menu
+helpMenu = Menu(mainMenu, tearoff=False)
+helpMenu.add_command(label="About", command=about)
+mainMenu.add_cascade(label="Help", menu=helpMenu)
+
+root.config(menu=mainMenu)
+
 # Tools Menu
 editingFrame = Frame(root, bd=2, relief="groove", padx=10, pady=10)
 editingFrame.pack(side=TOP)
@@ -197,23 +252,23 @@ editingLabel = Label(editingFrame, text="Tools")
 editingLabel.pack(side=TOP)
 
 moveButton = Button(editingFrame, text="Move", command=moveChange)
-moveButton.pack(side=LEFT)
+moveButton.pack(side=LEFT, padx=10)
 
 dotButton = Button(editingFrame, text="Brush", command=brushChange)
-dotButton.pack(side=LEFT)
+dotButton.pack(side=LEFT, padx=10)
 
 circleButton = Button(editingFrame, text="Circle", command=circleChange)
-circleButton.pack(side=LEFT)
+circleButton.pack(side=LEFT, padx=10)
 
 lineButton = Button(editingFrame, text="Line", command=lineChange)
-lineButton.pack(side=LEFT)
+lineButton.pack(side=LEFT, padx=10)
 
 rectangleButton = Button(editingFrame, text="Rectangle", command=rectangleChange)
-rectangleButton.pack(side=LEFT)
+rectangleButton.pack(side=LEFT, padx=10)
 
 
 textButton = Button(editingFrame, text="Text", command=textChange)
-textButton.pack(side=LEFT)
+textButton.pack(side=LEFT, padx=10)
 
 
 # Colors Menu
@@ -240,35 +295,37 @@ outlineMainFrame.pack(side=LEFT)
 # Actions Menu
 actionFrame = Frame(root, bd=2, relief="groove", padx=10, pady=10)
 
-deleteButton = Button(actionFrame, text="Clear All", command=clearCanvas)
-deleteButton.pack()
-
-
 actionLabel = Label(actionFrame, text="Actions")
-actionLabel.pack(side="bottom")
+actionLabel.pack(side=TOP)
+
+deleteButton = Button(actionFrame, text="Clear All", command=clearCanvas)
+deleteButton.pack(side=LEFT, padx=10)
+
+saveButton = Button(actionFrame, text="Save", command=lambda:saveImage(canvas))
+saveButton.pack(side=LEFT)
+
 actionFrame.pack()
 
-
+# Main Canvas where user draws anything
 canvas = Canvas(root, bg="white", width=1500, height=200, highlightcolor="yellow", cursor="dot")
-
-
 
 # Left Click Function
 canvas.bind("<ButtonPress-1>", leftClick)
 
-
 # Left Release Function
 canvas.bind("<ButtonRelease-1>", leftRelease)
 
-
+# When We click left mouse button the drag the mouse
 canvas.bind("<B1-Motion>", moveTest)
 
 canvas.pack(expand=YES, fill=BOTH)
 
+# Status Bar
 statusBar = Frame(root, relief='groove', borderwidth=5)
 currentToolLabel = Label(statusBar, textvariable=currentTool)
 currentToolLabel.pack()
 statusBar.pack(side=BOTTOM, fill=BOTH)
 
-
+# When user click close button it will prompt the user if he wants to quit because he has unsaved work on canvas
+root.protocol("WM_DELETE_WINDOW", quit)
 root.mainloop()
